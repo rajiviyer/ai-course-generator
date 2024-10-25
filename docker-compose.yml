@@ -1,0 +1,56 @@
+services:
+  frontend:
+    container_name: ai-course-gen-app-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=production
+      - PORT=3007
+    expose:
+      - 3007
+    depends_on:
+      - backend
+    networks:
+      - ai-course-gen-app-network
+
+  backend:
+    container_name: ai-course-gen-app-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8907:8907"
+    expose:
+      - 8907
+    depends_on:
+      - pgdatabase
+    networks:
+      - ai-course-gen-app-network
+
+  pgdatabase:
+    container_name: ai-course-gen-app-db
+    image: postgres:16.2-bookworm
+    ports:
+      - 5437:5432
+    restart: always
+    environment:
+      - POSTGRES_DB=coursedb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=welcome1
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./coursedb:/var/lib/postgresql/data:rw
+    networks:
+      - ai-course-gen-app-network
+
+networks:
+  ai-course-gen-app-network:
+    name: ai-course-gen-app-network
